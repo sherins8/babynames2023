@@ -1,0 +1,102 @@
+---
+title: "An Influx in Indian-American Baby Names?"
+date: "MM/DD/YYYY"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+knit: (function(i, encoding) {apstyle::render(i, encoding)})
+---
+
+<!-- Timestamp: leave this in to automatically track when a file is rendered -->
+
+*Rendered at `r format(Sys.time(), '%I:%M %p, %b. %d, %Y')`*
+
+<!-- Contact info: leave author/reporter/editor contact info here -->
+
+*Sherin Stanley ([sherinstanley\@gmail.com](mailto:sherinstanley@gmail.com){.email})*
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+  )
+
+knitr::opts_knit$set(
+  root.dir = rprojroot::find_rstudio_root_file()
+  )
+```
+
+```{r initialize}
+# Load files, environment variables, libraries, etc. here
+library(tidyverse)
+library(apstyle)
+```
+
+## Overview
+
+### Was there an influx of Indian-American baby names during the 2000's Indian Immigration period?
+
+    In the late '90s and early 2000s, America witnessed a large percentage of people migrating from India in pursuit of the American dream. These individuals brought their own customs, hobbies, and goals as well as their culture, from the aromatic essence of their cuisine to the energy in their styles of dance. Many of these immigrants, however, came to the US with one important hope: to give their children the opportunity to grow and live successful lives. My question is to examine some of the most popular Indian baby names, which I chose based on my own interpretation of what I considered the most common names I knew of while growing up, and analyze whether there is a correlation between the rise in popularity of these baby names and Indian immigration patterns to the US. 
+    When examining the graphs below, one for five common Indian boy names and one for five common Indian girl names, I discovered certain trends where there was indeed a rise in the popularity of some of these names between 1980 and 2000. However, some names did not follow a specific trend and displayed fluctuations. For instance, names such as "Arjun," "Aditya," "Nikhil," "Arnav," "Anjali," "Shreya," and "Mira" experienced a significant increase, starting around the 1970s to 1980s and peaking in the early 2000s. On the other hand, names like "Samir" and "Maya" exhibited more variability between the years 2000 and 2020, following a period of overall growth starting in the 1950s. Despite these fluctuations, these names remain popular name choices for parents today. 
+    One individual I interviewed, Jahnavi Alapati - a rising senior at UNC-Chapel Hill whose parents immigrated to the US in 2000 - shared her parents' reasons for moving to the US, stating, "My parents moved here a couple of years before they had me. They told me their main goal in immigrating here was to give me and my brother opportunities we wouldn't have gotten back in India." One intriguing finding was that the name "Jahnavi" did not appear until 1998, in contrast to many other popular Indian names during that time period. Although I have encountered many individuals named Jahnavi in my twenty years of living, the name might not have been common in the US before the late 1990s. When asked about this observation, Alapati noted that the name has only recently been more popular in the US, and while it follows a steady growth in the visual, she hasn't met anyone that spells her name the same way as she does. An important finding from this interview is that many of these baby names have a variety of spellings that our visuals are not accounting for. For example, the name Arnav has spellings of Aarnav and Arnaav, and the name Anjali might have spellings of Anjalee. 
+
+```{r}
+#The names I will be focusing on in my dataset are the following: Arjun, Samir, Aditya, Nikhil, Arnav, Jahnavi, Maya, Mira, Anjali, Shreya
+
+#First I'll look at the boys names
+boys_names <- nationaldf %>%
+  group_by(year) %>%
+  mutate(babies_max = max(babies)) %>%
+  ungroup() %>%
+  filter(name %in% c("Arjun", "Samir", "Aditya", "Nikhil", "Arnav"), 
+         year >= 1950,
+         sex == "M") %>%
+  mutate(fraction_max = babies / babies_max)
+ggplot(boys_names, aes(x = year, y = fraction_max, color = name)) +  geom_line() + scale_y_log10(labels=scales::label_percent()) + labs(title = "Popularity of these Indian Boy Names", caption = "Source: Social Security Administration", x = "Year", y = "%  of all Boy Babies") + theme_ap()
+```
+
+```{r}
+#Now I'll look at the girls names
+girls_names <-nationaldf %>%
+  group_by(year) %>%
+  mutate(babies_max = max(babies)) %>%
+  ungroup() %>%
+  filter(name %in% c("Jahnavi", "Maya", "Mira", "Anjali", "Shreya"), 
+         year >= 1950,
+         sex == "F") %>%
+  mutate(fraction_max = babies / babies_max)
+ggplot(girls_names, aes(x = year, y = fraction_max, color = name)) +  geom_line() + scale_y_log10(labels=scales::label_percent()) + labs(title = "Rise and Fall of the Popularity of these Indian Girl's Names Over Time", caption = "Source: Social Security Administration") + xlab("Year") + ylab("Frequency of Name") 
+```
+
+```{r}
+jahnavi_analysis <- nationaldf %>%
+  filter(name == "Jahnavi")
+min_jahnavi <- which.min(jahnavi_analysis$babies)
+jahnavi_analysis$year[min_jahnavi]
+```
+
+The link between Indian immigration patterns in the US and popular Indian baby names reveals both consistent trends and variations. As a result of both immigration and cultural assimilation, the popularity of some names grew more consistently while that of others fluctuated. This analysis highlights the interactions between evolving naming choices and immigration among Indian-Americans, shaping the landscape of popular Indian baby names in the United States.
+
+## References
+
+<!-- This section is for including references to related material -->
+
+-   CREDO National Charter School Study 2013: <http://credo.stanford.edu/documents/NCSS%202013%20Final%20Draft.pdf>
+
+-   NBER Working Paper No. 23947: The Labor Market Effects of Offshoring by U.S. Multinational Firms: Evidence from Changes in Global Tax Policies: <http://www.nber.org/papers/w23947>
+
+-   SSA Website: Beyond the Top 1000 Names: <https://www.ssa.gov/oact/babynames/limits.html>
+
+-   Indian Immigrants in the United States: <https://www.migrationpolicy.org/article/indian-immigrants-united-states>
+
+<!-- This section is for a tests code block -->
+
+```{r tests}
+# Leave this block of code at the end of the file
+# If a test fails it will stop the Rmd document from knitting
+# Run tests like so:
+# source("tests/etl_test.R")
+```
