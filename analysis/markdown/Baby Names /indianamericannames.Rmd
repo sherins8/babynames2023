@@ -27,21 +27,48 @@ knitr::opts_chunk$set(
 knitr::opts_knit$set(
   root.dir = rprojroot::find_rstudio_root_file()
   )
+
 ```
 
 ```{r initialize}
 # Load files, environment variables, libraries, etc. here
 library(tidyverse)
 library(apstyle)
+
+natfilepaths <- list.files("~/Documents/babynames2023/data/source/names", full.names = TRUE)
+
+nationaldf<-    map_df(natfilepaths,
+                       function(x) {
+                         read_csv(x, col_names = c("name","sex","babies")) %>%
+                           mutate(year = as.numeric(
+                             str_sub(x, nchar(x[1])-7,nchar(x[1])-4))
+                           )
+                       }
+)
 ```
 
 ## Overview
 
 ### Was there an influx of Indian-American baby names during the 2000's Indian Immigration period?
 
-    In the late '90s and early 2000s, America witnessed a large percentage of people migrating from India in pursuit of the American dream. These individuals brought their own customs, hobbies, and goals as well as their culture, from the aromatic essence of their cuisine to the energy in their styles of dance. Many of these immigrants, however, came to the US with one important hope: to give their children the opportunity to grow and live successful lives. My question is to examine some of the most popular Indian baby names, which I chose based on my own interpretation of what I considered the most common names I knew of while growing up, and analyze whether there is a correlation between the rise in popularity of these baby names and Indian immigration patterns to the US. 
-    When examining the graphs below, one for five common Indian boy names and one for five common Indian girl names, I discovered certain trends where there was indeed a rise in the popularity of some of these names between 1980 and 2000. However, some names did not follow a specific trend and displayed fluctuations. For instance, names such as "Arjun," "Aditya," "Nikhil," "Arnav," "Anjali," "Shreya," and "Mira" experienced a significant increase, starting around the 1970s to 1980s and peaking in the early 2000s. On the other hand, names like "Samir" and "Maya" exhibited more variability between the years 2000 and 2020, following a period of overall growth starting in the 1950s. Despite these fluctuations, these names remain popular name choices for parents today. 
-    One individual I interviewed, Jahnavi Alapati - a rising senior at UNC-Chapel Hill whose parents immigrated to the US in 2000 - shared her parents' reasons for moving to the US, stating, "My parents moved here a couple of years before they had me. They told me their main goal in immigrating here was to give me and my brother opportunities we wouldn't have gotten back in India." One intriguing finding was that the name "Jahnavi" did not appear until 1998, in contrast to many other popular Indian names during that time period. Although I have encountered many individuals named Jahnavi in my twenty years of living, the name might not have been common in the US before the late 1990s. When asked about this observation, Alapati noted that the name has only recently been more popular in the US, and while it follows a steady growth in the visual, she hasn't met anyone that spells her name the same way as she does. An important finding from this interview is that many of these baby names have a variety of spellings that our visuals are not accounting for. For example, the name Arnav has spellings of Aarnav and Arnaav, and the name Anjali might have spellings of Anjalee. 
+  Imagine this. You're on a trip with your family and stop by at a souvenir store. You stumble across one of those personalized souvenir rotating carts, with any name you can think of - well, any American name you can think of. After hours of searching for your name, you find nothing. Or you might get lucky and settle for something that has some semblance to your own name, like a magnet with the name "Renee" on it, but your name isn't Renee. It's Renita. And after some contemplating on whether or not to buy the magnet, if that means losing your identity or if it's even that serious and it is just a magnet, you get it. 
+  This is a common experience for many Indian American children growing up in the US. It has come to the point where many Indian Americans have started to choose more Americanized baby names for their kids. However, some parents are sticking with their original South Asian baby names to preserve their culture as much as they can. Another common experience Indian American children might experience is the relatability when they meet someone who shares the same name as them. To this day, I've never met anyone else named Sherin. The closest I've gotten to someone with the same name as me was a girl named Shirin who I met at a friend's birthday party in the fourth grade. 
+  "That seems typical," is what one individual I interviewed, Jahnavi Alapati, said when looking at the graph below, "I don't know many Jahnavis, so it makes sense for my name to not show the same growth as the other names do." When asked if growing up with a more uncommon name had any effect on the way she looked at her identity growing up, she said that she dealt with many struggles dealing with her cultural identity. She often felt alienated by her peers and wished her name was something more common and not as "unique". However, growing up she realized that while we might deal with this sense of unbelonging, our parents faced much more trivial struggles for the sake of our futures. "Most of our parents are immigrants that only moved here in recent years. My mom's name is Arpita. She was probably one of the first Arpitas to even step foot in this country. But she's not complaining about the lack of Arpita's she's met in her life. She came to this country without even really knowing how to speak English, and had to learn how to navigate a new world all on her own. So while I might have wished I wasn't the only Jahnavi I knew growing up, I grew up in a predominately South Indian neighborhood, which helped me with my cultural identity in another much more impactful way thanks to my parents. They knew I would want to grow up around other people culturally similar to us, which is what they did."
+  In a world where personalized souvenirs and relatability through names may seem trivial, the experiences of Indian American children reveal deeper struggles and the quest to preserve their cultural identity. The choice between Americanized and original South Asian names reflects the delicate balance between assimilation and heritage. While the lack of recognition can lead to a sense of alienation, the stories of individuals like Jahnavi Alapati shed light on the resilience of immigrant parents and the importance of community in shaping cultural identity. As the Indian American population continues to grow in numbers, the hope for increased acceptance and understanding of their names becomes ever more significant. Ultimately, this issue touches upon the complex interplay between individual identity, heritage, and the diverse fabric of American society.
+  
+    #talk about popularity of names/relatability, what did you find
+    #why does it matter -> visibility matters
+    #look at the variations of spelling, talk ab one thing being important and relating it to a larger trend
+    #projection 
+    #maya and mira also being common american names influencing the data??
+
+```{r}
+popular_today <- nationaldf %>%
+  filter(year == 2022, name %in% c("Arjun", "Samir", "Aditya", "Nikhil", "Arnav","Jahnavi", "Maya", "Mira", "Anjali", "Shreya")) %>%
+  arrange(desc(babies))
+popular_today
+
+```
 
 ```{r}
 #The names I will be focusing on in my dataset are the following: Arjun, Samir, Aditya, Nikhil, Arnav, Jahnavi, Maya, Mira, Anjali, Shreya
@@ -55,7 +82,8 @@ boys_names <- nationaldf %>%
          year >= 1950,
          sex == "M") %>%
   mutate(fraction_max = babies / babies_max)
-ggplot(boys_names, aes(x = year, y = fraction_max, color = name)) +  geom_line() + scale_y_log10(labels=scales::label_percent()) + labs(title = "Popularity of these Indian Boy Names", caption = "Source: Social Security Administration", x = "Year", y = "%  of all Boy Babies") + theme_ap()
+
+ggplot(boys_names, aes(x = year, y = fraction_max, color = name)) +  geom_line() + scale_y_log10(labels=scales::label_percent()) + labs(title = "Popularity of These Indian Boy Names", caption = "Source: Social Security Administration", x = "Year", y = "%  of all Boy Babies", color = "Name") + theme_ap(family = "") + theme(legend.position = "right")
 ```
 
 ```{r}
@@ -64,11 +92,11 @@ girls_names <-nationaldf %>%
   group_by(year) %>%
   mutate(babies_max = max(babies)) %>%
   ungroup() %>%
-  filter(name %in% c("Jahnavi", "Maya", "Mira", "Anjali", "Shreya"), 
+  filter(name %in% c("Jahnavi", "Maya", "Mira", "Deepika", "Priyanka"), 
          year >= 1950,
          sex == "F") %>%
   mutate(fraction_max = babies / babies_max)
-ggplot(girls_names, aes(x = year, y = fraction_max, color = name)) +  geom_line() + scale_y_log10(labels=scales::label_percent()) + labs(title = "Rise and Fall of the Popularity of these Indian Girl's Names Over Time", caption = "Source: Social Security Administration") + xlab("Year") + ylab("Frequency of Name") 
+ggplot(girls_names, aes(x = year, y = fraction_max, color = name)) +  geom_line() + scale_y_log10(labels=scales::label_percent()) + labs(title = "Popularity of These Indian Girl Names", x = "Year", y = "%  of all Girl Babies", caption = "Source: Social Security Administration") + theme_ap(family = "") + theme(legend.position = "right")
 ```
 
 ```{r}
@@ -77,8 +105,6 @@ jahnavi_analysis <- nationaldf %>%
 min_jahnavi <- which.min(jahnavi_analysis$babies)
 jahnavi_analysis$year[min_jahnavi]
 ```
-
-The link between Indian immigration patterns in the US and popular Indian baby names reveals both consistent trends and variations. As a result of both immigration and cultural assimilation, the popularity of some names grew more consistently while that of others fluctuated. This analysis highlights the interactions between evolving naming choices and immigration among Indian-Americans, shaping the landscape of popular Indian baby names in the United States.
 
 ## References
 
